@@ -1,17 +1,62 @@
-local PathfindingService = game:GetService("PathfindingService")
 local Players = game:GetService("Players")
+local CollectionService = game:GetService("CollectionService")
+local PathfindingService = game:GetService("PathfindingService")
 
-local AgentManager = {}
-AgentManager.__index = AgentManager
+local EnemyModule = script:FindFirstAncestor("EnemyModule")
+local EnemiesFolder = EnemyModule.Enemies
+local EnemySettings = require(script.Configurations.EnemySettings)
 
-function AgentManager.new(agent, path)
-	local agentAbility = nil
+local enemies = {}
+for _, child in ipairs(EnemiesFolder:GetChildren()) do
+	enemies[child.Name] = child
+end
+
+local EnemyManager = {}
+EnemyManager.__index = EnemyManager
+
+function EnemyManager.new(enemyType, location, path, difficulty)
+	assert(enemies[enemyType], "Invalid enemy type")
+	
+	local self = setmetatable({}, EnemyManager)
+
+	self._model = enemies[enemyType]:Clone()	
+
+	-- Disable unnecessary behaviors of humanoid to make game more efficient
+	--self._model.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, false)
+	--self._model.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing, false)
+	--self._model.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming, false)
+
+	-- Set enemy health based on difficulty
+	self._model.Humanoid.MaxHealth = EnemySettings.EnemyHealthDifficulty[difficulty]
+	self._model.Humanoid.Health = EnemySettings.EnemyHealthDifficulty[difficulty]
+
+	-- Tag the enemy's model
+	CollectionService:AddTag(self._model, "Enemy")
+
+	self._model.Humanoid.Died:Connect(function()
+		self:_destroy()
+	end)
+
+	self._model.HumanoidRootPart.Touched:Connect(function(otherPart) 
+		self:_onTouch(otherPart)
+	end)
+
+	self.target = nil
+	self.active = false
+	self.waypoints = path
+	self.enemyPath = PathfindingService:CreatePath()
+
+	self._model:SetPrimaryPartCFrame(location)
+	self._model.Parent = game.Workspace.Targets
+
+	return self
+
 	local self = {
-		agent = agent,
-		humanoid = agent.Humanoid,
-		agentpath = path,
-		agentAbility = agent:GetAttributes(),
-		path = PathfindingService:CreatePath(agentAbility),
+		enemy = enemies[enemyType]:Clone(),
+		humanoid = enemy.Humanoid,
+		--agentpath = path,
+		--agentAbility = agent:GetAttributes(),
+		--path = PathfindingService:CreatePath(agentAbility),
 		waypoints = {},
 		nextWaypointIndex = nil,
 		blockedConnection = nil,
@@ -19,12 +64,10 @@ function AgentManager.new(agent, path)
 		enabled = true,
 	}
 
-	setmetatable(self, AgentManager)
-
 	return self
 end
 
-function AgentManager:findTarget()
+function EnemyManager:findTarget()
 	local maxDistance = 40
 	local nearestTarget
 
@@ -43,7 +86,7 @@ function AgentManager:findTarget()
 	return nearestTarget
 end
 
-function AgentManager:damageTarget(target)
+function EnemyManager:damageTarget(target)
 	local distance = (self.agent.PrimaryPart.Position - target.HumanoidRootPart.Position).Magnitude
 
 	if distance < 8 then
@@ -51,12 +94,12 @@ function AgentManager:damageTarget(target)
 	end
 end
 
-function AgentManager:getDestination()
+function EnemyManager:getDestination()
 	local destination = self.agentpath
 	return destination[math.random(1, #destination)]
 end
 
-function AgentManager:spawnAgent()
+function EnemyManager:spawnAgent()
 	local destination = self:getDestination()
 	
 	if self.agent:IsA("BasePart") or self.agent:IsA("MeshPart") then
@@ -83,7 +126,7 @@ function AgentManager:spawnAgent()
 	self.agent.PrimaryPart:SetNetworkOwner(nil)
 end
 
-function AgentManager:followPath()
+function EnemyManager:followPath()
 	local destination = self:getDestination()
 	
 	-- Compute the path
@@ -118,10 +161,22 @@ function AgentManager:followPath()
 					
 					-- Increase waypoint index and move to next waypoint
 					self.nextWaypointIndex += 1
+					
+					-- If humanoid needs to jump
+					if self.waypoints[self.nextWaypointIndex].Action == Enum.PathWaypointAction.Jump then
+						self.humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+					end
+					
 					self.humanoid:MoveTo(self.waypoints[self.nextWaypointIndex].Position)
 					
 					if target then
 						self.humanoid:MoveTo(target.HumanoidRootPart.Position)
+						self:damageTarget(target)
+						
+						self.path:ComputeAsync(self.agent.PrimaryPart.Position, target.HumanoidRootPart.Position)
+						self.waypoints = self.path:GetWaypoints()
+						self.nextWaypointIndex = 2
+						self.humanoid:MoveTo(self.waypoints[self.nextWaypointIndex].Position)
 						self:damageTarget(target)
 					end
 				else
@@ -150,4 +205,42 @@ function AgentManager:followPath()
 	end
 end
 
-return AgentManager
+----
+function Enemy:_update()
+	if self._model and self._model:FindFirstChild("Humanoid") then
+		local targetPosition = self._target.PrimaryPart.Position
+		local targetVelocity = self._target.PrimaryPart.AssemblyLinearVelocity
+		local predictedPosition = targetPosition + targetVelocity * 4
+		self._model.Humanoid:MoveTo(targetPosition)
+	end
+end
+
+-- Main enemy loop
+function Enemy:start()
+	coroutine.wrap(function()
+		self._active = true
+		while(self._active) do
+			self:_update()
+			wait(UPDATE_TIME_INTERVAL)
+		end
+	end)()
+end
+
+function Enemy:stop()
+	self._active = false
+	self._model.Humanoid.WalkSpeed = 0
+end
+
+function Enemy:_destroy()
+	self._model:Destroy()
+end
+
+function Enemy:_onTouch(otherPart)
+	if self._active and CollectionService:HasTag(otherPart, "Platform") then
+		hitPlatformEvent:Fire()
+		self:stop()
+		self:_destroy()
+	end
+end
+----
+return EnemyManager
