@@ -1,5 +1,6 @@
 local EnemySettings = {}
 
+-- Fields that define properties of the enemy
 EnemySettings.EnemyData = {
 	AgentRadius = 5,
 	AgentHeight = 10,
@@ -11,34 +12,42 @@ EnemySettings.EnemyData = {
 	}
 }
 
--- Hitpoints for each enemy; one blaster shot takes 35 hitpoints
+-- Defines the health values for enemies at different difficulty levels
 EnemySettings.HealthDifficulty = {
 	Easy = 100,
 	Normal = 125,
 	Hard = 160
 }
 
+-- Defines the properties of each attack phase for the enemy
 EnemySettings.attackPhase= {
 	["Phase 1"] = {
-		attackDamage = 100,
-		attackInterval = 1,
-		numberOfAttaks = 3,
-		attackDuration = 10 -- assuming projectile speed is 10 units per second
+		attackDamage = 100, -- damage dealt
+		attackInterval = 1, -- interval between attacks
+		numberOfAttaks = 5, -- number of attacks
+		attackDuration = 10 -- duration of the attack assuming projectile speed is 10 units per second
 	},
 	["Phase 2"] = {
-		attackDamage = 90,
+		attackDamage = 100,
 		attackInterval = 0.7,
-		numberOfAttaks = 4,
-		attackDuration = 20
+		numberOfAttaks = 5,
+		attackDuration = 13
 	},
 	["Phase 3"] = {
-		attackDamage = 80,
+		attackDamage = 100,
 		attackInterval = 0.4,
 		numberOfAttaks = 6,
-		attackDuration = 30
+		attackDuration = 17
+	},
+	["Phase 4"] = {
+		attackDamage = 100,
+		attackInterval = 0.2,
+		numberOfAttaks = 6,
+		attackDuration = 25
 	}
 }
 
+-- Determines whether enemies should follow a predetermined path or move freely around the game world
 EnemySettings.FollowOrderedPath = true
 
 return EnemySettings

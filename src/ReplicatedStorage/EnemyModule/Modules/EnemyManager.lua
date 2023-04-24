@@ -16,7 +16,7 @@ end
 local EnemyManager = {}
 EnemyManager.__index = EnemyManager
 
-function EnemyManager.new(enemyType, enemySpawn, trackNode, difficulty, target)
+function EnemyManager.new(enemyType, enemySpawn, enemyDifficulty, trackNode, target)
 	assert(enemies[enemyType], "Invalid enemy type")
 	
 	local self = setmetatable({}, EnemyManager)
@@ -37,8 +37,8 @@ function EnemyManager.new(enemyType, enemySpawn, trackNode, difficulty, target)
 	self.humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming, false)
 
 	-- Set enemy health based on difficulty
-	self.humanoid.MaxHealth = EnemySettings.HealthDifficulty[difficulty]
-	self.humanoid.Health = EnemySettings.HealthDifficulty[difficulty]
+	self.humanoid.MaxHealth = EnemySettings.HealthDifficulty[enemyDifficulty]
+	self.humanoid.Health = EnemySettings.HealthDifficulty[enemyDifficulty]
 
 	self.humanoidDiedConnection = self.humanoid.Died:Connect(function()
 		self:_destroy()
@@ -162,6 +162,8 @@ function EnemyManager:spawnEnemy()
 	self.idleAnimation = self.animator:LoadAnimation(Animations.IdleAnim)
 	self.runAnimation = self.animator:LoadAnimation(Animations.RunAnim)
 	self.jumpAnimation = self.animator:LoadAnimation(Animations.JumpAnim)
+	
+	self.idleAnimation:Play()
 end
 
 function EnemyManager:followTarged()
@@ -177,6 +179,8 @@ function EnemyManager:followTarged()
 	if success and self.enemyPath.Status == Enum.PathStatus.Success then
 		-- Get the path waypoints
 		self.waypoints = self.enemyPath:GetWaypoints()
+		-- Initially move to second waypoint (first waypoint is path start; skip it)
+		self.nextWaypointIndex = 2
 		
 		-- Detect when movement to next waypoint is complete
 		self.reachedConnection = self.humanoid.MoveToFinished:Connect(function(reached)
@@ -205,13 +209,11 @@ function EnemyManager:followTarged()
 
 				self.idleAnimation:Stop()
 				-- Call function to re-compute new path
-				--self:followTarged()
-				self:_destroy()
+				self:followTarged()
 			end
 		end)
 		
-		-- Initially move to second waypoint (first waypoint is path start; skip it)
-		self.nextWaypointIndex = 2
+		self.idleAnimation:Stop()
 		self.runAnimation:Play()
 		self.humanoid:MoveTo(self.waypoints[self.nextWaypointIndex].Position)
 	else

@@ -53,6 +53,10 @@ function AttackClass:performEnemyAttack()
 
 	-- Play the sound of the ball being fired
 	self.sound:Play()
+	
+	delay(duration, function()
+		self:_destroy()
+	end)
 end
 
 function AttackClass:attackTarget()
@@ -74,6 +78,10 @@ function AttackClass:attackTarget()
 	self._attack.Parent = workspace
 	
 	self._attack:ApplyImpulse(force * self._attack.AssemblyMass)
+	
+	delay(duration, function()
+		self:_destroy()
+	end)
 end
 
 -- 
