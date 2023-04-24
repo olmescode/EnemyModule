@@ -90,7 +90,6 @@ function AttackClass:_onTouch(otherPart)
 		if otherPart.Parent == self.target then
 			local humanoid = otherPart.Parent:FindFirstChild("Humanoid")
 			
-			--self.sound:Play()
 			humanoid:TakeDamage(self._attackPhase.attackDamage)
 			self:_destroy()
 		end

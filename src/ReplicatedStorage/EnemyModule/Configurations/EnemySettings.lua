@@ -29,20 +29,20 @@ EnemySettings.attackPhase= {
 	},
 	["Phase 2"] = {
 		attackDamage = 100,
-		attackInterval = 0.7,
-		numberOfAttaks = 5,
+		attackInterval = 0.8,
+		numberOfAttaks = 6,
 		attackDuration = 13
 	},
 	["Phase 3"] = {
 		attackDamage = 100,
-		attackInterval = 0.4,
-		numberOfAttaks = 6,
+		attackInterval = 0.6,
+		numberOfAttaks = 7,
 		attackDuration = 17
 	},
 	["Phase 4"] = {
 		attackDamage = 100,
-		attackInterval = 0.2,
-		numberOfAttaks = 6,
+		attackInterval = 0.4,
+		numberOfAttaks = 8,
 		attackDuration = 25
 	}
 }

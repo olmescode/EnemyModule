@@ -30,6 +30,7 @@ function EnemyManager.new(enemyType, enemySpawn, enemyDifficulty, trackNode, tar
 	self.active = false
 	self.orderedPath = if EnemySettings.FollowOrderedPath then EnemySettings.FollowOrderedPath else false
 	self.currentPath = 0
+	self.onTargetDied = EnemyModule.Events.TargetDied
 	
 	-- Disable unnecessary behaviors of humanoid to make game more efficient
 	self.humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, false)
@@ -50,6 +51,7 @@ function EnemyManager.new(enemyType, enemySpawn, enemyDifficulty, trackNode, tar
 	
 	self.targetDiedConnection = self.target.Humanoid.Died:Connect(function()
 		self:_destroy()
+		self.onTargetDied:Fire()
 	end)
 	
 	self._attackPhase = EnemySettings.attackPhase
