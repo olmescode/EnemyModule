@@ -1,10 +1,9 @@
 print("Required EnemyModule")
-local enemiesFolder = script.Enemies
 
 local EnemyModule = {
-	AgentManager = require(script.Modules.AgentManager),
+	EnemyManager = require(script.Modules.EnemyManager),
 	createTrack = require(script.Api.createTrack),
-	enemiesFolder = enemiesFolder
+	createOrderedTrack = require(script.Api.createOrderedTrack)
 }
 
 return EnemyModule
