@@ -2,7 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
 local EnemyModule = script:FindFirstAncestor("EnemyModule")
-local AttacksFolder = EnemyModule.Components
+local AttacksFolder = EnemyModule.Attacks
 
 local attacks = {}
 for _, child in ipairs(AttacksFolder:GetChildren()) do

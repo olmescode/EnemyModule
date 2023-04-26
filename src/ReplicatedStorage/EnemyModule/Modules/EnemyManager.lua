@@ -2,11 +2,12 @@ local Players = game:GetService("Players")
 local PathfindingService = game:GetService("PathfindingService")
 
 local EnemyModule = script:FindFirstAncestor("EnemyModule")
-local EnemySettings = require(EnemyModule.Configurations.EnemySettings)
+local EnemySettings = require(EnemyModule.EnemySettings)
 local AttackClass = require(EnemyModule.Modules.AttackClass)
 
 local EnemiesFolder = EnemyModule.Enemies
 local Animations = EnemyModule.Animations
+local TargetDied = EnemyModule.Events.TargetDied
 
 local enemies = {}
 for _, child in ipairs(EnemiesFolder:GetChildren()) do
@@ -28,9 +29,8 @@ function EnemyManager.new(enemyType, enemySpawn, enemyDifficulty, trackNode, tar
 	
 	self.target = if target then target else nil
 	self.active = false
-	self.orderedPath = if EnemySettings.FollowOrderedPath then EnemySettings.FollowOrderedPath else false
 	self.currentPath = 0
-	self.onTargetDied = EnemyModule.Events.TargetDied
+	self.onTargetDied = TargetDied
 	
 	-- Disable unnecessary behaviors of humanoid to make game more efficient
 	self.humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, false)
@@ -50,8 +50,8 @@ function EnemyManager.new(enemyType, enemySpawn, enemyDifficulty, trackNode, tar
 	end)
 	
 	self.targetDiedConnection = self.target.Humanoid.Died:Connect(function()
-		self:_destroy()
 		self.onTargetDied:Fire()
+		self:_destroy()
 	end)
 	
 	self._attackPhase = EnemySettings.attackPhase
@@ -244,8 +244,8 @@ function EnemyManager:_destroy()
 	
 	self.target = nil
 	self.active = nil
-	self.orderedPath = nil
 	self.currentPath = nil
+	--self.onTargetDied = nil
 	
 	self._attackType = nil
 	self.location = nil
@@ -255,18 +255,24 @@ function EnemyManager:_destroy()
 
 	self.nextWaypointIndex = nil
 	
-	self.humanoidDiedConnection:Disconnect()
-	self.touchedConnection:Disconnect()
-	self.targetDiedConnection:Disconnect()
+	if self.humanoidDiedConnection then
+		self.humanoidDiedConnection:Disconnect()
+		self.humanoidDiedConnection = nil
+	end
 	
-	self.humanoidDiedConnection = nil
-	self.touchedConnection = nil
-	self.targetDiedConnection = nil
+	if self.touchedConnection then
+		self.touchedConnection:Disconnect()
+		self.touchedConnection = nil
+	end
+	
+	--self.targetDiedConnection:Disconnect()
 	
 	if self.reachedConnection then
 		self.reachedConnection:Disconnect()
 		self.reachedConnection = nil
 	end
+	
+	--self.targetDiedConnection = nil
 	
 	self._enemy:Destroy()
 end

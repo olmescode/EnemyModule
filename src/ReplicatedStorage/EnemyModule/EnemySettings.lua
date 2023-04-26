@@ -47,7 +47,4 @@ EnemySettings.attackPhase= {
 	}
 }
 
--- Determines whether enemies should follow a predetermined path or move freely around the game world
-EnemySettings.FollowOrderedPath = true
-
 return EnemySettings
