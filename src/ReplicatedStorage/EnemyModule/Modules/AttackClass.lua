@@ -31,7 +31,7 @@ function AttackClass.new(enemy, target, attackPhase)
 	return self
 end
 
-function AttackClass:performEnemyAttack()
+function AttackClass:attackTarget()
 	if not self.enemy or not self.target then
 		return
 	end	
@@ -59,32 +59,6 @@ function AttackClass:performEnemyAttack()
 	end)
 end
 
-function AttackClass:attackTarget()
-	if not self.enemy or not self.target then
-		return
-	end
-	local enemy = self.enemy.PrimaryPart.Position
-	local target = self.target.PrimaryPart.Position
-	
-	local direction = target - enemy
-	local duration = math.log(1.001 + direction.Magnitude * 0.01) * 1.5 -- increase duration by 50%
-	
-	target = self.target.PrimaryPart.Position + self.target.HumanoidRootPart.AssemblyLinearVelocity * duration
-	direction = target - enemy
-	
-	local force = direction / duration + Vector3.new(0, game.Workspace.Gravity * duration * 0.5, 0)
-	
-	self._attack.Position = enemy
-	self._attack.Parent = workspace
-	
-	self._attack:ApplyImpulse(force * self._attack.AssemblyMass)
-	
-	delay(duration, function()
-		self:_destroy()
-	end)
-end
-
--- 
 function AttackClass:_onTouch(otherPart)
 	if otherPart and otherPart.Parent then
 		if otherPart.Parent == self.target then

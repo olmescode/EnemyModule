@@ -83,7 +83,7 @@ function EnemyManager:performEnemyAttack(Phase)
 
 		-- Attack the target
 		local attackInstance = AttackClass.new(self._enemy, self.target, attackPhase)
-		attackInstance:performEnemyAttack()
+		attackInstance:attackTarget()
 		task.wait(attackInterval)
 	end
 end
@@ -202,7 +202,7 @@ function EnemyManager:followTarged()
 				self.runAnimation:Stop()
 				self.idleAnimation:Play()
 				
-				self:performEnemyAttack("Phase 3")
+				self:attackTarget("Phase 3")
 
 				if self.reachedConnection then
 					self.reachedConnection:Disconnect()
