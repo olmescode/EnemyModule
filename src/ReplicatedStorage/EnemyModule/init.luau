@@ -1,12 +1,19 @@
 print("Required EnemyModule")
 
+local events = require(script.events)
+
 local EnemyModule = {
-	EnemyManager = require(script.Modules.EnemyManager),
+	-- Configurations
+	
+	-- Server and client APIs
 	createEnemy = require(script.Api.createEnemy),
 	createTrack = require(script.Api.createTrack),
 	
 	-- Events
-	onTargetDied = script.Events.TargetDied.Event
+	onEnemyDied = events.enemyDied.Event,
+	
+	-- Remotes
+	remotes = script.Remotes
 }
 
 return EnemyModule
