@@ -16,7 +16,11 @@ A powerful and flexible enemy management system for Roblox games, supporting bot
 
 ## Screenshots
 
-[Your screenshots/GIFs will go here]
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/eff1499c-ad71-4b1e-95d6-709d8c94ec7d" width="30%">
+  <img src="https://github.com/user-attachments/assets/5dd1ecbc-c294-429b-9ba6-0de782a0d3d7" width="30%">
+  <img src="https://github.com/user-attachments/assets/18d50e2c-b11d-41e9-b828-17dd5e8559ce" width="30%">
+</p>
 
 ## Installation
 
